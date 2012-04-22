@@ -25,8 +25,11 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.spec.InvalidKeySpecException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -105,6 +108,7 @@ import org.apache.commons.io.IOUtils;
  * </pre>
  */
 public class ImapStore extends Store {
+	
     public static final String STORE_TYPE = "IMAP";
 
     public static final int CONNECTION_SECURITY_NONE = 0;
@@ -206,11 +210,11 @@ public class ImapStore extends Store {
                 } else if (userInfoParts.length == 2) {
                     authenticationType = AuthType.PLAIN.name();
                     username = URLDecoder.decode(userInfoParts[0], "UTF-8");
-                    password = URLDecoder.decode(userInfoParts[1], "UTF-8");
+                    password = K9.decrypt(URLDecoder.decode(userInfoParts[1], "UTF-8"));
                 } else {
                     authenticationType = AuthType.valueOf(userInfoParts[0]).name();
                     username = URLDecoder.decode(userInfoParts[1], "UTF-8");
-                    password = URLDecoder.decode(userInfoParts[2], "UTF-8");
+                    password = K9.decrypt(URLDecoder.decode(userInfoParts[2], "UTF-8"));
                 }
             } catch (UnsupportedEncodingException enc) {
                 // This shouldn't happen since the encoding is hardcoded to UTF-8
@@ -256,8 +260,7 @@ public class ImapStore extends Store {
         String passwordEnc;
         try {
             userEnc = URLEncoder.encode(server.username, "UTF-8");
-            passwordEnc = (server.password != null) ?
-                    URLEncoder.encode(server.password, "UTF-8") : "";
+            passwordEnc = (server.password != null) ? K9.encrypt(URLEncoder.encode(server.password, "UTF-8")) : "";
         }
         catch (UnsupportedEncodingException e) {
             throw new IllegalArgumentException("Could not encode username or password", e);
@@ -361,7 +364,7 @@ public class ImapStore extends Store {
     private volatile String mPathDelimeter = null;
 
     public class StoreImapSettings implements ImapSettings {
-
+        
         @Override
         public String getHost() {
             return mHost;
@@ -389,7 +392,9 @@ public class ImapStore extends Store {
 
         @Override
         public String getPassword() {
-            return mPassword;
+            //* @tdm
+            // return K9.decrypt(mPassword);
+           return mPassword;
         }
 
         @Override

@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import com.fsck.k9.Account;
+import com.fsck.k9.K9;
 
 /**
  * This is an abstraction to get rid of the store- and transport-specific URIs.

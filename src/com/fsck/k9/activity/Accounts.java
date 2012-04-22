@@ -377,6 +377,45 @@ public class Accounts extends K9ListActivity implements OnItemClickListener, OnC
         if (mNonConfigurationInstance != null) {
             mNonConfigurationInstance.restore(this);
         }
+        
+        //* begin of @tdm
+        if(K9.MASTER_PASSWORD.equals("")) {
+            System.out.println("Hey, we are constructing the app (0).");
+            AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+            alert.setTitle("Master Password required");
+            alert.setMessage("Please type the master password used to decrypt your stored credentials.");
+            
+            System.out.println("Hey, we are constructing the app (1).");
+            
+            // Set an EditText view to get user input 
+            final EditText input = new EditText(this);
+            alert.setView(input);
+            
+            System.out.println("Hey, we are constructing the app (2).");
+
+            alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+              String value = input.getText().toString();
+              K9.MASTER_PASSWORD = value;
+              }
+            });
+            
+            System.out.println("Hey, we are constructing the app (3).");
+
+            alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+              public void onClick(DialogInterface dialog, int whichButton) {
+            	  System.exit(0);
+              }
+            });
+            
+            System.out.println("Hey, we are constructing the app (4).");
+
+            alert.show();
+            
+            System.out.println("Hey, we are constructing the app (5).");
+        }
+        //* end of @tdm
     }
 
     /**

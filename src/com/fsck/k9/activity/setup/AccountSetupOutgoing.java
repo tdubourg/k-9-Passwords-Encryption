@@ -290,7 +290,7 @@ public class AccountSetupOutgoing extends K9Activity implements OnClickListener,
         URI uri;
         try {
             String usernameEnc = URLEncoder.encode(mUsernameView.getText().toString(), "UTF-8");
-            String passwordEnc = URLEncoder.encode(mPasswordView.getText().toString(), "UTF-8");
+            String passwordEnc = URLEncoder.encode(K9.encrypt(mPasswordView.getText().toString()), "UTF-8");
 
             String userInfo = null;
             String authType = ((SpinnerOption)mAuthTypeView.getSelectedItem()).label;

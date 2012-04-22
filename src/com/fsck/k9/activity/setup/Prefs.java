@@ -89,6 +89,7 @@ public class Prefs extends K9PreferenceActivity {
     private static final String PREFERENCE_SENSITIVE_LOGGING = "sensitive_logging";
 
     private static final String PREFERENCE_ATTACHMENT_DEF_PATH = "attachment_default_path";
+    private static final String PREFERENCE_MASTER_PASSWORD = "attachment_default_path";
 
     private static final int ACTIVITY_CHOOSE_FOLDER = 1;
     private ListPreference mLanguage;

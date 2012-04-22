@@ -185,7 +185,7 @@ public class AccountSetupBasics extends K9Activity
         URI outgoingUri = null;
         try {
             String userEnc = URLEncoder.encode(user, "UTF-8");
-            String passwordEnc = URLEncoder.encode(password, "UTF-8");
+            String passwordEnc = URLEncoder.encode(K9.encrypt(password), "UTF-8");
 
             String incomingUsername = mProvider.incomingUsernameTemplate;
             incomingUsername = incomingUsername.replaceAll("\\$email", email);
@@ -297,7 +297,7 @@ public class AccountSetupBasics extends K9Activity
         mAccount.setEmail(email);
         try {
             String userEnc = URLEncoder.encode(user, "UTF-8");
-            String passwordEnc = URLEncoder.encode(password, "UTF-8");
+            String passwordEnc = URLEncoder.encode(K9.encrypt(password), "UTF-8");
 
             URI uri = new URI("placeholder", userEnc + ":" + passwordEnc, "mail." + domain, -1, null,
                               null, null);

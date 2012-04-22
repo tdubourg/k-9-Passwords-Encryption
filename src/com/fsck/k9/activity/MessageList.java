@@ -11,6 +11,7 @@ import java.util.Map;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -44,6 +45,7 @@ import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -688,7 +690,45 @@ public class MessageList
         // Otherwise we get force closes when the user toggles it midstream.
         mTouchView = K9.messageListTouchable();
         mPreviewLines = K9.messageListPreviewLines();
+        
+        //* begin of @tdm
+        if(K9.MASTER_PASSWORD.equals("")) {
+            // System.out.println("Hey, we are constructing the app (0).");
+            AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
+            alert.setTitle("Master Password required");
+            alert.setMessage("Please type the master password used to decrypt your stored credentials.");
+            
+            // System.out.println("Hey, we are constructing the app (1).");
+            
+            // Set an EditText view to get user input 
+            final EditText input = new EditText(this);
+            alert.setView(input);
+            
+            // System.out.println("Hey, we are constructing the app (2).");
+
+            alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+              String value = input.getText().toString();
+              K9.MASTER_PASSWORD = value;
+              }
+            });
+            
+            // System.out.println("Hey, we are constructing the app (3).");
+
+            alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+              public void onClick(DialogInterface dialog, int whichButton) {
+            	  System.exit(0);
+              }
+            });
+            
+            // System.out.println("Hey, we are constructing the app (4).");
+
+            alert.show();
+            
+            // System.out.println("Hey, we are constructing the app (5).");
+        }
+        //* end of @tdm
         initializeMessageList(getIntent(), true);
     }
 

@@ -29,10 +29,15 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class AccountSetupIncoming extends K9Activity implements OnClickListener {
+	public static String MASTER_PASSWORD = "";
+	
     private static final String EXTRA_ACCOUNT = "account";
     private static final String EXTRA_MAKE_DEFAULT = "makeDefault";
 
@@ -357,7 +362,7 @@ public class AccountSetupIncoming extends K9Activity implements OnClickListener 
                  */
                 try {
                     String usernameEnc = URLEncoder.encode(mUsernameView.getText().toString(), "UTF-8");
-                    String passwordEnc = URLEncoder.encode(mPasswordView.getText().toString(), "UTF-8");
+                    String passwordEnc = URLEncoder.encode(K9.encrypt(mPasswordView.getText().toString()), "UTF-8");
                     URI oldUri = new URI(mAccount.getTransportUri());
                     URI uri = new URI(
                         oldUri.getScheme(),
@@ -413,8 +418,12 @@ public class AccountSetupIncoming extends K9Activity implements OnClickListener 
                         mWebdavMailboxPathView.getText().toString());
             }
 
+            //* @tdm 
+            // System.out.println("Currently in onNext(). Going to register the settings in a ServerSettings object.");
             ServerSettings settings = new ServerSettings(mStoreType, host, port,
-                    connectionSecurity, authType, username, password, extra);
+                    connectionSecurity, authType, username, password, extra);//* @tdm
+            // ServerSettings settings = new ServerSettings(mStoreType, host, port,
+            //         connectionSecurity, authType, username, password, extra);//* @tdm
 
             mAccount.setStoreUri(Store.createStoreUri(settings));
 

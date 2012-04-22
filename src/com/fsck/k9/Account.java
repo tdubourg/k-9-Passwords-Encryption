@@ -312,6 +312,8 @@ public class Account implements BaseAccount {
         mStoreUri = Utility.base64Decode(prefs.getString(mUuid + ".storeUri", null));
         mLocalStorageProviderId = prefs.getString(mUuid + ".localStorageProvider", StorageManager.getInstance(K9.app).getDefaultProviderId());
         mTransportUri = Utility.base64Decode(prefs.getString(mUuid + ".transportUri", null));
+        //* @tdm
+        // System.out.println("crypt dbg mTransportUri=" + mTransportUri);
         mDescription = prefs.getString(mUuid + ".description", null);
         mAlwaysBcc = prefs.getString(mUuid + ".alwaysBcc", mAlwaysBcc);
         mAutomaticCheckIntervalMinutes = prefs.getInt(mUuid + ".automaticCheckIntervalMinutes", -1);
@@ -770,6 +772,7 @@ public class Account implements BaseAccount {
     }
 
     public synchronized void setStoreUri(String storeUri) {
+        // System.out.println("crypt dbg : setStoreUri(" + storeUri + ")"); //* @tdm
         this.mStoreUri = storeUri;
     }
 
@@ -778,6 +781,7 @@ public class Account implements BaseAccount {
     }
 
     public synchronized void setTransportUri(String transportUri) {
+    	// System.out.println("crypt dbg : setTransportUri(" + transportUri + ")");//* @tdm
         this.mTransportUri = transportUri;
     }
 

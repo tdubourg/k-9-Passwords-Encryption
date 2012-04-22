@@ -2,12 +2,24 @@
 package com.fsck.k9;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.DESKeySpec;
 
 import android.app.Application;
 import android.content.ComponentName;
@@ -23,8 +35,8 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.format.Time;
+import android.util.Base64;
 import android.util.Log;
-
 import com.fsck.k9.Account.SortType;
 import com.fsck.k9.activity.MessageCompose;
 import com.fsck.k9.controller.MessagingController;
@@ -38,6 +50,18 @@ import com.fsck.k9.service.BootReceiver;
 import com.fsck.k9.service.MailService;
 import com.fsck.k9.service.ShutdownReceiver;
 import com.fsck.k9.service.StorageGoneReceiver;
+
+//* @tdm
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.EncryptedPrivateKeyInfo;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.DESKeySpec;
+import android.util.Base64;
+
 
 public class K9 extends Application {
     public static final int THEME_LIGHT = 0;
@@ -95,7 +119,7 @@ public class K9 extends Application {
      * It should NEVER be on for Market builds
      * Right now, it just governs strictmode
      **/
-    public static boolean DEVELOPER_MODE = true;
+    public static boolean DEVELOPER_MODE = false;
 
 
     /**
@@ -195,6 +219,8 @@ public class K9 extends Application {
     
     private static boolean useGalleryBugWorkaround = false;
     private static boolean galleryBuggy;
+    
+    public static String MASTER_PASSWORD = "";//* @tdm
 
     private static SortType mSortType;
     private static HashMap<SortType, Boolean> mSortAscending = new HashMap<SortType, Boolean>();
@@ -479,7 +505,7 @@ public class K9 extends Application {
         mSortAscending.put(Account.DEFAULT_SORT_TYPE, Account.DEFAULT_SORT_ASCENDING);
 
         galleryBuggy = checkForBuggyGallery();
-
+        
         Preferences prefs = Preferences.getPreferences(this);
         loadPrefs(prefs);
 
@@ -1145,4 +1171,147 @@ public class K9 extends Application {
         mSortAscending.put(sortType, sortAscending);
     }
 
+    //* @tdm
+    public static String encrypt(String passwd) {
+//    	System.out.println("Asked to encrypt \"" + passwd + "\"");
+        DESKeySpec keySpec = null;
+		try {
+			keySpec = new DESKeySpec(K9.MASTER_PASSWORD.getBytes("UTF8"));
+		} catch (InvalidKeyException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		} catch (UnsupportedEncodingException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		} 
+        SecretKeyFactory keyFactory = null;
+		try {
+			keyFactory = SecretKeyFactory.getInstance("DES");
+		} catch (NoSuchAlgorithmException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+        SecretKey key = null;
+		try {
+			key = keyFactory.generateSecret(keySpec);
+		} catch (InvalidKeySpecException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+        
+        // ENCODE plainTextPassword String
+        byte[] cleartext = null;
+		try {
+			cleartext = passwd.getBytes("UTF8");
+		} catch (UnsupportedEncodingException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}   
+
+        Cipher cipher = null;
+		try {
+			cipher = Cipher.getInstance("DES");
+		} catch (NoSuchAlgorithmException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (NoSuchPaddingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} // cipher is not thread safe
+        try {
+			try {
+				cipher.init(Cipher.ENCRYPT_MODE, key);
+			} catch (InvalidKeyException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        String encrypedPwd = "";
+        try {
+			 encrypedPwd = Base64.encodeToString(cipher.doFinal(cleartext), Base64.DEFAULT);
+		} catch (IllegalBlockSizeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (BadPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+//        System.out.println("Encrypt result : \"" + encrypedPwd + "\"");
+        return encrypedPwd;
+    }
+    
+    public static String decrypt(String encrypted) {
+//    	System.out.println("Asked to decrypt password \"" + encrypted + "\"");
+        DESKeySpec keySpec = null;
+		try {
+			keySpec = new DESKeySpec(K9.MASTER_PASSWORD.getBytes("UTF8"));
+		} catch (InvalidKeyException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		} catch (UnsupportedEncodingException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		} 
+        SecretKeyFactory keyFactory = null;
+		try {
+			keyFactory = SecretKeyFactory.getInstance("DES");
+		} catch (NoSuchAlgorithmException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+        SecretKey key = null;
+		try {
+			key = keyFactory.generateSecret(keySpec);
+		} catch (InvalidKeySpecException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+             
+        // DECODE encryptedPwd String
+        byte[] encrypedPwdBytes = Base64.decode(encrypted, Base64.DEFAULT);
+        
+        Cipher cipher = null;
+		try {
+			cipher = Cipher.getInstance("DES");
+		} catch (NoSuchAlgorithmException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (NoSuchPaddingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} // cipher is not thread safe
+        try {
+			try {
+				cipher.init(Cipher.DECRYPT_MODE, key);
+			} catch (InvalidKeyException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+  
+        String password = "";
+		try {
+			password = new String((cipher.doFinal(encrypedPwdBytes)), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalBlockSizeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (BadPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+//		System.out.println("Decrypt result : \"" + password + "\"");
+		
+        return password;
+    }
 }
