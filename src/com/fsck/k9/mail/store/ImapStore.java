@@ -260,7 +260,7 @@ public class ImapStore extends Store {
         String passwordEnc;
         try {
             userEnc = URLEncoder.encode(server.username, "UTF-8");
-            passwordEnc = (server.password != null) ? K9.encrypt(URLEncoder.encode(server.password, "UTF-8")) : "";
+            passwordEnc = (server.password != null) ? URLEncoder.encode(K9.encrypt(server.password), "UTF-8") : "";//* @tdm
         }
         catch (UnsupportedEncodingException e) {
             throw new IllegalArgumentException("Could not encode username or password", e);
@@ -392,8 +392,6 @@ public class ImapStore extends Store {
 
         @Override
         public String getPassword() {
-            //* @tdm
-            // return K9.decrypt(mPassword);
            return mPassword;
         }
 

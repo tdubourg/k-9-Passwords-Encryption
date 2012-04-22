@@ -156,7 +156,7 @@ public class WebDavStore extends Store {
                     alias = username;
                 }
                 if (userInfoParts.length > 1) {
-                    password = URLDecoder.decode(userInfoParts[1], "UTF-8");
+                    password = K9.decrypt(URLDecoder.decode(userInfoParts[1], "UTF-8"));
                 }
             } catch (UnsupportedEncodingException enc) {
                 // This shouldn't happen since the encoding is hardcoded to UTF-8
@@ -205,7 +205,7 @@ public class WebDavStore extends Store {
         try {
             userEnc = URLEncoder.encode(server.username, "UTF-8");
             passwordEnc = (server.password != null) ?
-                    URLEncoder.encode(server.password, "UTF-8") : "";
+                    URLEncoder.encode(K9.encrypt(server.password), "UTF-8") : "";
         }
         catch (UnsupportedEncodingException e) {
             throw new IllegalArgumentException("Could not encode username or password", e);

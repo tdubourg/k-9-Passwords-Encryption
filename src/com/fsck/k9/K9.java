@@ -6,6 +6,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +21,8 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.PBEParameterSpec;
 
 import android.app.Application;
 import android.content.ComponentName;
@@ -1172,32 +1175,31 @@ public class K9 extends Application {
     }
 
     //* @tdm
+    
+    private static final byte[] salt =  
+        {  
+            (byte)0x4D, (byte)0x9B, (byte)0xC6, (byte)0x53,  
+            (byte)0x17, (byte)0xAF, (byte)0xE2, (byte)0x08  
+        };  
+      
+    private static final int iterations = 311;  
+
+
     public static String encrypt(String passwd) {
 //    	System.out.println("Asked to encrypt \"" + passwd + "\"");
-        DESKeySpec keySpec = null;
+    	
+        PBEKeySpec keySpec = new PBEKeySpec(K9.MASTER_PASSWORD.toCharArray(), salt, iterations);  
+    	SecretKey key = null;
 		try {
-			keySpec = new DESKeySpec(K9.MASTER_PASSWORD.getBytes("UTF8"));
-		} catch (InvalidKeyException e2) {
+			key = SecretKeyFactory.getInstance("PBEWithMD5AndDES").generateSecret(keySpec);
+		} catch (InvalidKeySpecException e3) {
 			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		} catch (UnsupportedEncodingException e2) {
+			e3.printStackTrace();
+		} catch (NoSuchAlgorithmException e3) {
 			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		} 
-        SecretKeyFactory keyFactory = null;
-		try {
-			keyFactory = SecretKeyFactory.getInstance("DES");
-		} catch (NoSuchAlgorithmException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
-        SecretKey key = null;
-		try {
-			key = keyFactory.generateSecret(keySpec);
-		} catch (InvalidKeySpecException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
+			e3.printStackTrace();
+		}  
+        AlgorithmParameterSpec paramSpec = new PBEParameterSpec(salt, iterations);  
         
         // ENCODE plainTextPassword String
         byte[] cleartext = null;
@@ -1206,11 +1208,11 @@ public class K9 extends Application {
 		} catch (UnsupportedEncodingException e2) {
 			// TODO Auto-generated catch block
 			e2.printStackTrace();
-		}   
+		}
 
         Cipher cipher = null;
 		try {
-			cipher = Cipher.getInstance("DES");
+			cipher = Cipher.getInstance(key.getAlgorithm());
 		} catch (NoSuchAlgorithmException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -1220,7 +1222,7 @@ public class K9 extends Application {
 		} // cipher is not thread safe
         try {
 			try {
-				cipher.init(Cipher.ENCRYPT_MODE, key);
+				cipher.init(Cipher.ENCRYPT_MODE, key, paramSpec);
 			} catch (InvalidKeyException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -1231,7 +1233,7 @@ public class K9 extends Application {
 		}
         String encrypedPwd = "";
         try {
-			 encrypedPwd = Base64.encodeToString(cipher.doFinal(cleartext), Base64.DEFAULT);
+			 encrypedPwd = Base64.encodeToString(cipher.doFinal(cleartext), Base64.NO_PADDING);
 		} catch (IllegalBlockSizeException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -1240,43 +1242,33 @@ public class K9 extends Application {
 			e.printStackTrace();
 		}
         
-//        System.out.println("Encrypt result : \"" + encrypedPwd + "\"");
+//         System.out.println("Encrypt result : \"" + encrypedPwd + "\"");
         return encrypedPwd;
     }
     
     public static String decrypt(String encrypted) {
-//    	System.out.println("Asked to decrypt password \"" + encrypted + "\"");
-        DESKeySpec keySpec = null;
-		try {
-			keySpec = new DESKeySpec(K9.MASTER_PASSWORD.getBytes("UTF8"));
-		} catch (InvalidKeyException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		} catch (UnsupportedEncodingException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		} 
-        SecretKeyFactory keyFactory = null;
-		try {
-			keyFactory = SecretKeyFactory.getInstance("DES");
-		} catch (NoSuchAlgorithmException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
-        SecretKey key = null;
-		try {
-			key = keyFactory.generateSecret(keySpec);
-		} catch (InvalidKeySpecException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
-             
+//    	 System.out.println("Asked to decrypt password \"" + encrypted + "\"");
+
+    	PBEKeySpec keySpec = new PBEKeySpec(K9.MASTER_PASSWORD.toCharArray(), salt, iterations);  
+     	SecretKey key = null;
+ 		try {
+ 			key = SecretKeyFactory.getInstance("PBEWithMD5AndDES").generateSecret(keySpec);
+ 		} catch (InvalidKeySpecException e3) {
+ 			// TODO Auto-generated catch block
+ 			e3.printStackTrace();
+ 		} catch (NoSuchAlgorithmException e3) {
+ 			// TODO Auto-generated catch block
+ 			e3.printStackTrace();
+ 		}  
+         AlgorithmParameterSpec paramSpec = new PBEParameterSpec(salt, iterations);  
+
+    	 
         // DECODE encryptedPwd String
-        byte[] encrypedPwdBytes = Base64.decode(encrypted, Base64.DEFAULT);
+        byte[] encrypedPwdBytes = Base64.decode(encrypted, Base64.NO_PADDING);
         
         Cipher cipher = null;
 		try {
-			cipher = Cipher.getInstance("DES");
+			cipher = Cipher.getInstance(key.getAlgorithm());
 		} catch (NoSuchAlgorithmException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -1286,7 +1278,7 @@ public class K9 extends Application {
 		} // cipher is not thread safe
         try {
 			try {
-				cipher.init(Cipher.DECRYPT_MODE, key);
+				cipher.init(Cipher.DECRYPT_MODE, key, paramSpec);
 			} catch (InvalidKeyException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -1310,7 +1302,7 @@ public class K9 extends Application {
 			e.printStackTrace();
 		}
         
-//		System.out.println("Decrypt result : \"" + password + "\"");
+//		 System.out.println("Decrypt result : \"" + password + "\"");
 		
         return password;
     }

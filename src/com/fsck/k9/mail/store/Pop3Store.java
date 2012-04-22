@@ -127,7 +127,7 @@ public class Pop3Store extends Store {
                 }
                 username = URLDecoder.decode(userInfoParts[userIndex], "UTF-8");
                 if (userInfoParts.length > passwordIndex) {
-                    password = URLDecoder.decode(userInfoParts[passwordIndex], "UTF-8");
+                    password = K9.decrypt(URLDecoder.decode(userInfoParts[passwordIndex], "UTF-8"));
                 }
             } catch (UnsupportedEncodingException enc) {
                 // This shouldn't happen since the encoding is hardcoded to UTF-8
@@ -156,7 +156,7 @@ public class Pop3Store extends Store {
         try {
             userEnc = URLEncoder.encode(server.username, "UTF-8");
             passwordEnc = (server.password != null) ?
-                    URLEncoder.encode(server.password, "UTF-8") : "";
+                    URLEncoder.encode(K9.encrypt(server.password), "UTF-8") : "";
         }
         catch (UnsupportedEncodingException e) {
             throw new IllegalArgumentException("Could not encode username or password", e);

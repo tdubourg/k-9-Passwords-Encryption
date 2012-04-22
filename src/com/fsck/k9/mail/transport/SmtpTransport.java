@@ -132,7 +132,7 @@ public class SmtpTransport extends Transport {
      * @see SmtpTransport#decodeUri(String)
      */
     public static String createUri(ServerSettings server) {
-    	System.out.println("crypt dbg : createUri() launched.");//* @tdm
+    	// System.out.println("crypt dbg : createUri() launched.");//* @tdm
         String userEnc;
         String passwordEnc;
         try {
@@ -140,7 +140,7 @@ public class SmtpTransport extends Transport {
                     URLEncoder.encode(server.username, "UTF-8") : "";
             passwordEnc = (server.password != null) ?
                     URLEncoder.encode(K9.encrypt(server.password), "UTF-8") : "";
-                    System.out.println("dbg crypt : passwordEnc=" + passwordEnc);
+                    // System.out.println("dbg crypt : passwordEnc=" + passwordEnc);
         }
         catch (UnsupportedEncodingException e) {
             throw new IllegalArgumentException("Could not encode username or password", e);

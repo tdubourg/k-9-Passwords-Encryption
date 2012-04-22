@@ -421,9 +421,7 @@ public class AccountSetupIncoming extends K9Activity implements OnClickListener 
             //* @tdm 
             // System.out.println("Currently in onNext(). Going to register the settings in a ServerSettings object.");
             ServerSettings settings = new ServerSettings(mStoreType, host, port,
-                    connectionSecurity, authType, username, password, extra);//* @tdm
-            // ServerSettings settings = new ServerSettings(mStoreType, host, port,
-            //         connectionSecurity, authType, username, password, extra);//* @tdm
+                    connectionSecurity, authType, username, password, extra);
 
             mAccount.setStoreUri(Store.createStoreUri(settings));
 
